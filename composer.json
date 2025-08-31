@@ -4,5 +4,8 @@
             "App\\": "app/",
             "Infra\\": "infra/"
         }
+    },
+    "require": {
+        "symfony/event-dispatcher": "^7.3"
     }
 }

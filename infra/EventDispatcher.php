@@ -40,6 +40,7 @@ class EventDispatcher
 
         foreach ($subscribers as [$obj, $methodName]) {
             try {
+
                 $obj->$methodName($event);
             } catch (\Exception $e) {
                 echo "Something went wrong when trying to perform event {$eventClassName}\n";
