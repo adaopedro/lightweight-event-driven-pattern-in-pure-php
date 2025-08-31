@@ -6,19 +6,22 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class OrderPlaced extends Event
 {
-    public const string = "order.placed";
+    public const string NAME = "order.placed";
 
     public function __construct(public readonly array $payload) {}
 
-    public function getOrderId(): string {
+    public function getOrderId(): string
+    {
         return $this->payload["orderId"];
     }
 
-    public function getClientEmail(): string {
+    public function getClientEmail(): string
+    {
         return $this->payload["client"]["email"] ?? "";
     }
 
-    public function getPayload(): array {
+    public function getPayload(): array
+    {
         return $this->payload;
     }
 }

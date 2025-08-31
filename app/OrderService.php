@@ -3,23 +3,35 @@
 namespace App;
 
 use App\Event\OrderPlaced;
-use Infra\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class OrderService
 {
 
     public function __construct(
-        private EventDispatcher $dispatcher
+        private EventDispatcherInterface $eventDispatcher
     ) {}
 
     public function placeOrder(array $order): void
     {
-        // Perform some action 
+        $this->validateOrder($order);
 
-        // Then...
+        echo "[OrderService] Processing order {$order['orderId']}...\n";
 
-        $this->dispatcher->dispatch(
-            event: new OrderPlaced(payload: $order)
-        );
+        $event = new OrderPlaced($order);
+        $this->eventDispatcher->dispatch($event, OrderPlaced::NAME);
+
+        echo "[OrderService] Order {$order['orderId']} processed successfully!\n";
+    }
+
+    private function validateOrder(array $order): void
+    {
+        if (empty($order["orderId"])) {
+            throw new \InvalidArgumentException("Order ID is required");
+        }
+
+        if (empty($order["client"]["email"])) {
+            throw new \InvalidArgumentException("Client email is required");
+        }
     }
 }
