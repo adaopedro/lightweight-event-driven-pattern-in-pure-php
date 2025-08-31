@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Subscriber;
+namespace App\Listener;
 
 use App\Event\OrderPlaced;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;

@@ -1,10 +1,8 @@
 <?php
 
 use App\Event\OrderPlaced;
-use App\Listener\InventoryListener;
 use App\OrderService;
-use App\Subscriber\EmailNotificationListener;
-use App\Subscriber\LogListener;
+use App\Listener\{InventoryListener, EmailNotificationListener, LogListener};
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
