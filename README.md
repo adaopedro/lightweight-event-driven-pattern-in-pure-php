@@ -2,6 +2,8 @@
 
 Este projeto demonstra uma implementação **simples** do padrão **Event-Driven** usando **PHP puro**. A ideia é mostrar como eventos e subscribers podem ser usados para desacoplar responsabilidades em um sistema.
 
+> 🔀 **Implementação com Symfony EventDispatcher**: Existe uma versão mais robusta deste projeto usando `symfony/event-dispatcher` na branch [`refactor/event-dispatcher`](../../tree/refactor/event-dispatcher). Esta versão oferece maior performance, funcionalidades avançadas como prioridades de listeners e compatibilidade com PSR-14.
+
 ## 📋 Índice
 
 - [Visão Geral](#visão-geral)
@@ -11,6 +13,7 @@ Este projeto demonstra uma implementação **simples** do padrão **Event-Driven
 - [Uso](#uso)
 - [Exemplos](#exemplos)
 - [Arquitetura](#arquitetura)
+- [Implementação com Symfony](#implementação-com-symfony)
 
 ## 🎯 Visão Geral
 
@@ -64,12 +67,14 @@ LogSubscriber::onOrderPlaced()
 ## 🚀 Instalação
 
 1. Clone o repositório:
+
 ```bash
 git clone <repository-url>
 cd event-driven-php
 ```
 
 2. Instale as dependências:
+
 ```bash
 composer install
 ```
@@ -95,30 +100,30 @@ php cmd/place-order.php '{"orderId": "abc-123-000", "client": {"email": "john@gm
 
 ```json
 {
-    "orderId": "abc-123-000",
-    "datetime": "2024-12-07 14:30:00",
-    "client": {
-        "userId": 123,
-        "name": "John Doe",
-        "email": "john@gmail.com"
-    },
-    "products": [
-        {
-            "productId": 1,
-            "description": "Produto A",
-            "unitOfMeasure": "UN",
-            "unitPrice": 50.00,
-            "quantity": 2,
-            "taxPercentage": 10.00,
-            "taxType": "ICMS",
-            "taxAmount": 10.00,
-            "setlementAmount": 110.00
-        }
-    ],
-    "customer": {
-        "customerId": 456,
-        "name": "Empresa XYZ"
+  "orderId": "abc-123-000",
+  "datetime": "2024-12-07 14:30:00",
+  "client": {
+    "userId": 123,
+    "name": "John Doe",
+    "email": "john@gmail.com"
+  },
+  "products": [
+    {
+      "productId": 1,
+      "description": "Produto A",
+      "unitOfMeasure": "UN",
+      "unitPrice": 50.0,
+      "quantity": 2,
+      "taxPercentage": 10.0,
+      "taxType": "ICMS",
+      "taxAmount": 10.0,
+      "setlementAmount": 110.0
     }
+  ],
+  "customer": {
+    "customerId": 456,
+    "name": "Empresa XYZ"
+  }
 }
 ```
 
@@ -155,6 +160,7 @@ $dispatcher->addSubscriber(new InventorySubscriber());
 ### Componentes Principais
 
 **EventDispatcher**: Núcleo do sistema que:
+
 - Registra subscribers usando Reflection API
 - Identifica métodos marcados com `#[ListensTo]`
 - Despacha eventos para os subscribers apropriados
@@ -165,6 +171,7 @@ $dispatcher->addSubscriber(new InventorySubscriber());
 **Event Classes**: Carregam dados do evento. No exemplo, `OrderPlaced` contém o payload do pedido.
 
 **Subscribers**: Classes que reagem aos eventos. Cada uma tem responsabilidade específica:
+
 - `EmailNotificationSubscriber`: Envia notificações
 - `LogSubscriber`: Registra logs em arquivos
 
@@ -197,4 +204,47 @@ Os logs são salvos em `/logs/` com nomes únicos gerados por `uniqid()`. Certif
 
 ---
 
-*Este é um projeto educacional para demonstrar conceitos de arquitetura orientada a eventos em PHP.*
+## 🔀 Implementação com Symfony
+
+Para uma implementação mais robusta e profissional, confira a branch [`refactor/event-dispatcher`](../../tree/refactor/event-dispatcher) que utiliza o `symfony/event-dispatcher`. Esta versão oferece:
+
+### ✨ **Vantagens da Implementação Symfony**
+
+- **🚀 Performance**: EventDispatcher otimizado e testado em produção
+- **⚡ Prioridades**: Controle da ordem de execução dos listeners
+- **🛑 Stop Propagation**: Possibilidade de interromper a cadeia de eventos
+- **📊 Debugging**: Compatibilidade com Symfony Profiler
+- **📖 PSR-14**: Implementa o padrão Event Dispatcher Interface
+- **🔧 Funcionalidades**: Recursos avançados como event subscribers
+- **🏭 Produção**: Usado por milhares de aplicações em produção
+
+### 🔄 **Principais Diferenças**
+
+| Aspecto | PHP Puro (main) | Symfony (refactor/event-dispatcher) |
+|---------|----------------|-------------------------------------|
+| **Dependencies** | Nenhuma | `symfony/event-dispatcher` |
+| **Event Base** | Classes simples | Extende `Symfony\Contracts\EventDispatcher\Event` |
+| **Listeners** | `#[ListensTo]` customizado | `#[AsEventListener]` nativo do Symfony |
+| **Prioridades** | ❌ Não suportado | ✅ Suporte completo |
+| **Stop Propagation** | ❌ Não disponível | ✅ `$event->stopPropagation()` |
+| **Performance** | Básica | ⚡ Otimizada |
+| **Debugging** | Echo simples | 🔧 Symfony Profiler ready |
+
+### 🎯 **Quando Usar Cada Versão**
+
+**Use a versão PHP Puro (main branch) quando:**
+- Aprender os conceitos básicos de Event-Driven
+- Projeto simples sem necessidade de funcionalidades avançadas
+- Preferir não adicionar dependências externas
+- Entender como funciona "por baixo dos panos"
+
+**Use a versão Symfony (refactor/event-dispatcher) quando:**
+- Construir aplicações para produção
+- Precisar de performance otimizada
+- Querer funcionalidades avançadas (prioridades, stop propagation)
+- Já usar ou planejar usar o ecossistema Symfony
+- Seguir padrões da indústria (PSR-14)
+
+---
+
+*Este é um projeto educacional para demonstrar conceitos de arquitetura orientada a eventos em PHP. A branch principal mostra a implementação pura, enquanto a branch `refactor/event-dispatcher` demonstra como usar ferramentas profissionais.*
