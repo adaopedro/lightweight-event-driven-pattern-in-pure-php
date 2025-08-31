@@ -1,48 +1,79 @@
 <?php
 
+use App\Event\OrderPlaced;
+use App\Listener\InventoryListener;
 use App\OrderService;
-use App\Subscriber\EmailNotificationSubscriber;
-use App\Subscriber\LogSubscriber;
+use App\Subscriber\EmailNotificationListener;
+use App\Subscriber\LogListener;
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
-$dispatcher = new Infra\EventDispatcher;
-$dispatcher->addSubscriber(new EmailNotificationSubscriber);
-$dispatcher->addSubscriber(new LogSubscriber(dirname(__DIR__)));
+if (!isset($argv[1])) {
+    echo "Usage: php place-order.php '<json-order-data>'\n";
+    echo "Example: php place-order.php '{\"orderId\": \"abc-123-000\", \"client\": {\"email\": \"john@gmail.com\"}}'\n";
+    exit(1);
+}
 
-$data = json_decode($argv[1], true);
+try {
+    $data = json_decode($argv[1], true);
 
-$orderService = new OrderService($dispatcher);
-$orderService->placeOrder(order: $data);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new \InvalidArgumentException('Invalid JSON provided: ' . json_last_error_msg());
+    }
 
-// Windows Terminal: php .\cmd\place-order.php "{\"orderId\": \"abc-123-000\", \"client\": {\"email\": \"john@gmail.com\"}}"
+    $eventDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher;
+    $eventDispatcher->addListener(OrderPlaced::NAME, new EmailNotificationListener, 0);
+    $eventDispatcher->addListener(OrderPlaced::NAME, new LogListener(dirname(__DIR__)), 10);
+    $eventDispatcher->addListener(OrderPlaced::NAME, new InventoryListener, 20);
+
+    echo "Starting order processing...\n";
+    echo str_repeat('-', 50) . "\n";
+
+    $orderService = new OrderService($eventDispatcher);
+    $orderService->placeOrder(order: $data);
+
+    echo str_repeat('-', 50) . "\n";
+    echo "Order processing completed!\n";
+} catch (\Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
+}
+
 
 /*
-OrderSchema
-{
-    "orderId": "GUID/string",
-    "datetime": "string",
+Comandos de exemplo:
+
+# Pedido básico
+php cmd/place-order.php '{"orderId": "abc-123-000", "client": {"email": "john@gmail.com"}}'
+
+# Pedido completo
+php cmd/place-order.php '{
+    "orderId": "ord-456-789",
+    "datetime": "2024-12-07 14:30:00",
     "client": {
-        "userId": "integer",
-        "name": "string",
-        "email": "string"
+        "userId": 123,
+        "name": "John Doe",
+        "email": "john@example.com"
     },
-    "products" : [
+    "products": [
         {
-            "productId": "integer",
-            "description": "string",
-            "unitOfMeasure": "string",
-            "unitPrice": "decimal",
-            "quantity": "decimal",
-            "taxPercentage": "decimal",
-            "taxType": "string",
-            "taxAmount": "decimal",
-            "setlementAmount": "decimal",
+            "productId": 1,
+            "description": "Produto A",
+            "unitOfMeasure": "UN",
+            "unitPrice": 50.00,
+            "quantity": 2,
+            "taxPercentage": 10.00,
+            "taxType": "ICMS",
+            "taxAmount": 10.00,
+            "settlementAmount": 110.00
         }
     ],
     "customer": {
-        "customerId": "integer",
-        "name": "string",
+        "customerId": 456,
+        "name": "Empresa XYZ"
     }
-}
+}'
+
+# Windows (escape das aspas)
+php cmd\place-order.php "{\"orderId\": \"abc-123-000\", \"client\": {\"email\": \"john@gmail.com\"}}"
 */

@@ -6,7 +6,7 @@ use App\Event\OrderPlaced;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 #[AsEventListener(event: OrderPlaced::NAME)]
-class LogSubscriber
+class LogListener
 {
     public function __construct(private string $baseDir) {}
 

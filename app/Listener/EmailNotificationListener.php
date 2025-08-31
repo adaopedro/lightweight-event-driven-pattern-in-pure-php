@@ -6,7 +6,7 @@ use App\Event\OrderPlaced;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 #[AsEventListener(event: OrderPlaced::NAME)]
-class EmailNotificationSubscriber
+class EmailNotificationListener
 {
 
     public function __invoke(OrderPlaced $event)
